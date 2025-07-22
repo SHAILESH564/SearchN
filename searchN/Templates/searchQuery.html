@@ -1,0 +1,16 @@
+
+
+<form method="POST" class="search-form">
+            <!-- Security token for CSRF protection -->
+            <h2>Search N</h2>
+            <h4>Enter tags with comma(,) </h4>
+            <!-- {{ form.as_p }} -->
+            {% csrf_token %}
+            <div>
+                <label for="query1">Enter the query: </label>
+                <input type="text" id="query1" name="query" placeholder="Enter your search query">
+            </div>
+            <br />
+
+            <button type="submit">Search</button>
+</form>

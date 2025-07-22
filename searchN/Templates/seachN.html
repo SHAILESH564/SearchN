@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchN</title>
+    <link rel="stylesheet" href="{% static 'searchN.css' %}">
+</head>
+<body>
+    <div class="form-body">
+        {% include 'searchQuery.html' %}
+        
+        <div class="imageForm">
+            {% if page_obj %}
+                <h2>Results:</h2>
+                <div class="images-div" >
+                    {% for img in images %}
+                        <div class="images-populate">
+                            <!-- <img src="{{ img.url }}" alt="Result Image" style="height: 200px;"> -->
+                            <a href="{{ img.link }}">
+                                {% if img.is_remote %}
+                                    <img src="{{ img.url }}" alt="Result Image" style="height: 200px;">
+                                {% else %}
+                                    <img src="{% static img.url %}" alt="Result Image" style="height: 200px;">
+                                {% endif %}
+                                <span class="caption">{{ img.name }}</span>
+                            </a>
+                            <!-- <img src="{% static img %}" alt="Result Image" style="height: 200px;"> -->
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- Pagination Link -->
+                 <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    {% endif %}
+                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                    {% endif %}
+                 </div>
+            {% endif %}
+        </div>
+
+    </div>
+</body>
+</html>
