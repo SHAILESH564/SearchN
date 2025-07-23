@@ -81,8 +81,8 @@ WSGI_APPLICATION = 'webN.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        # default='postgresql://postgres:postgres@localhost:5432/mysite',
-        default = os.environ.get('DATABASE_URL'),
+        default='postgresql://postgres:postgres@localhost:5432/webN',
+        # default = os.environ.get('postgresql://searchn_user:PEh6ljqMxtlWqddorECJ3CJe14WGs1be@dpg-d20b2sp5pdvs73cbd8k0-a/searchn'),
         conn_max_age=600
     )
 }
