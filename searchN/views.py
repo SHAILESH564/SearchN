@@ -83,5 +83,5 @@ def search(request):
         # print(f"Result: {result}")
     print(f"{page_obj} images found")
 
-    return render(request, 'searchN/seachN.html', { 'page_obj': page_obj , 'images': images})
+    return render(request, 'searchN/searchN.html', { 'page_obj': page_obj , 'images': images})
     # return HttpResponse("Search N")
