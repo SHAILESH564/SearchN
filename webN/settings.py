@@ -61,7 +61,7 @@ ROOT_URLCONF = 'webN.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],  # Add your templates directory here
+        'DIRS': [],  # Add your templates directory here
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
