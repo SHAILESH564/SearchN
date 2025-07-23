@@ -21,7 +21,7 @@ class Crawler:
         # scrapeops_proxy = f"https://proxy.scrapeops.io/v1/?api_key={self.api_key}"
         # scrapeops_proxy = f"http://scrapeops.headless_browser_mode=true:{self.api_key}@proxy.scrapeops.io:5353"
 
-        self.tags = [tag.strip().replace(',','-') for tag in tags.split(',')]
+        self.tags = [tag.strip().replace(' ','-') for tag in tags.split(',')]
         ua = UserAgent()
 
         options = Options()
