@@ -26,7 +26,7 @@ def Home(request):
             form.save()
             return HttpResponse("Form submitted successfully")
         
-    return render(request, '/searchN/index.html', {'form': form})
+    return render(request, 'searchN/index.html', {'form': form})
 
 # def search(request):
 #     # form = SearchForm()
