@@ -6,26 +6,17 @@ python manage.py collectstatic --no-input
 # Install Python dependencies
 pip install -r requirements.txt
 
-python manage.py migrate
-# Chrome install dir
 STORAGE_DIR=/opt/render/project/.render
-CHROME_DIR=$STORAGE_DIR/chrome
-CHROME_BIN=$CHROME_DIR/opt/google/chrome/google-chrome
 
-if [[ ! -f "$CHROME_BIN" ]]; then
+if [[ ! -d $STORAGE_DIR/chrome ]]; then
   echo "...Downloading Chrome"
-  mkdir -p $CHROME_DIR
-  cd $CHROME_DIR
-  wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  dpkg -x google-chrome-stable_current_amd64.deb $CHROME_DIR
-  rm google-chrome-stable_current_amd64.deb
+  mkdir -p $STORAGE_DIR/chrome
+  cd $STORAGE_DIR/chrome
+  wget -P ./ https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  dpkg -x ./google-chrome-stable_current_amd64.deb $STORAGE_DIR/chrome
+  rm ./google-chrome-stable_current_amd64.deb
+  cd $HOME/project/src # Make sure we return to where we were
 else
-  echo "...Using cached Chrome"
+  echo "...Using Chrome from cache"
 fi
-
-# Set env variables so Django/Selenium can access Chrome
-echo "export CHROME_BIN=$CHROME_BIN" >> ~/.bashrc
-echo "export PATH=$CHROME_DIR:$PATH" >> ~/.bashrc
-
-
-
+python manage.py migrate
