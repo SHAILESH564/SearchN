@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.views import View
 from .forms import ReservationForm, SearchForm
 from .crawler import Crawler
@@ -82,6 +82,8 @@ def search(request):
     page_obj = page.get_page(page_number)
         # print(f"Result: {result}")
     print(f"{page_obj} images found")
-
-    return render(request, 'searchN/searchN.html', { 'page_obj': page_obj , 'images': images})
+    try:
+        return render(request, 'searchN/searchN.html', { 'page_obj': page_obj , 'images': images})
+    except Exception as e:
+        return HttpResponseServerError(f"Something broke: {e}")
     # return HttpResponse("Search N")
