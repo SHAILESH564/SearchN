@@ -25,7 +25,6 @@ def Home(request):
         if form.is_valid():
             form.save()
             return HttpResponse("Form submitted successfully")
-    print(Path(__file__).resolve().parent, "path")
     return render(request, 'index.html', {'form': form})
 
 # def search(request):
