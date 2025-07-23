@@ -3,10 +3,10 @@ set -o errexit
 
 python manage.py collectstatic --no-input
 
-#!/usr/bin/env bash
-# Exit on error
-set -o errexit
+# Install Python dependencies
+pip install -r requirements.txt
 
+python manage.py migrate
 # Chrome install dir
 STORAGE_DIR=/opt/render/project/.render
 CHROME_DIR=$STORAGE_DIR/chrome
@@ -27,8 +27,5 @@ fi
 echo "export CHROME_BIN=$CHROME_BIN" >> ~/.bashrc
 echo "export PATH=$CHROME_DIR:$PATH" >> ~/.bashrc
 
-# Install Python dependencies
-pip install -r requirements.txt
 
 
-python manage.py migrate
