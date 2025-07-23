@@ -83,7 +83,7 @@ def search(request):
         # print(f"Result: {result}")
     print(f"{page_obj} images found")
     try:
-        return render(request, 'searchN/searchN.html', { 'page_obj': page_obj , 'images': images})
+        return render(request, 'searchN.html', { 'page_obj': page_obj , 'images': images})
     except Exception as e:
         return HttpResponseServerError(f"Something broke: {e}")
     # return HttpResponse("Search N")
