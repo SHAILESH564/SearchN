@@ -21,7 +21,7 @@ class Crawler:
         # scrapeops_proxy = f"https://proxy.scrapeops.io/v1/?api_key={self.api_key}"
         # scrapeops_proxy = f"http://scrapeops.headless_browser_mode=true:{self.api_key}@proxy.scrapeops.io:5353"
 
-        self.tags = [tag.strip().replace(' ','-') for tag in tags.split(',')]
+        self.tags = [tag.strip().lower().replace(' ','-') for tag in tags.split(',')]
         ua = UserAgent()
 
         options = Options()
@@ -117,16 +117,16 @@ class Crawler:
                 proxy_url = self.get_scrapeops_url(target_url)
                 self.driver.get(proxy_url)
                 WebDriverWait(self.driver, 2).until(
-                    EC.presence_of_all_elements_located((By.CSS_SELECTOR,".container .gallery a.cover"))
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.container .gallery a.cover"))
                 )
+                # All the photos urls
+                urls = self.driver.find_elements(By.CSS_SELECTOR, "div.container .gallery a.cover")
             
             except Exception as e:
                 print(f"⚠️ Timeout waiting for galleries on page {page}")
                 page += 1
                 continue
 
-            # All the photos urls
-            urls = self.driver.find_elements(By.CSS_SELECTOR, ".container .gallery a.cover")
             for url in urls:
                 try:
                     name = url.find_element(By.CLASS_NAME, "caption").text

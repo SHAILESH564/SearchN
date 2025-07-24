@@ -49,7 +49,8 @@ def search(request):
         try:
             crawler = Crawler(query)
             smallest_tag = crawler.returnSmallestCountTag()
-            result = crawler.search_main_tag(smallest_tag)
+            print(f"Smallest tag: {smallest_tag}")
+            crawler.search_main_tag(smallest_tag)
         except Exception as e:
             print(f"❌ Error during crawling: {e}")
         # for name, link, src in result.values():
