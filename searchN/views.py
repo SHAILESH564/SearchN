@@ -46,10 +46,12 @@ def search(request):
         print(f"Search query: {query}")
         # return HttpResponse(f"Search submitted successfully {query}")
         SearchN.objects.all().delete()  # Clear previous search results
-        crawler = Crawler(query)
-        smallest_tag = crawler.returnSmallestCountTag()
-        print(f"Smallest tag: {smallest_tag}")
-        crawler.search_main_tag(smallest_tag)
+        try:
+            crawler = Crawler(query)
+            smallest_tag = crawler.returnSmallestCountTag()
+            result = crawler.search_main_tag(smallest_tag)
+        except Exception as e:
+            print(f"❌ Error during crawling: {e}")
         # for name, link, src in result.values():
         #     images.append({"url": src, 
         #                    "name": name,

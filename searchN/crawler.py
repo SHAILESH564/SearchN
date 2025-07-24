@@ -25,7 +25,7 @@ class Crawler:
         ua = UserAgent()
 
         options = Options()
-        options.binary_location = os.getenv('CHROME_BIN')
+        options.binary_location = os.getenv("CHROME_BIN", "/opt/render/project/src/chrome/opt/google/chrome/google-chrome")
         options.add_argument("--headless=new")
         # options.add_argument(f"--proxy-server={scrapeops_proxy}")
         options.add_argument("--no-sandbox")
