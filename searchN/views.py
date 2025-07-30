@@ -1,64 +1,22 @@
-from pathlib import Path
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseServerError
-from django.views import View
-from .forms import ReservationForm, SearchForm
-from .crawler import Crawler
+from django.http import HttpResponseServerError
+from .tasks import run_crawler_task_celery
 from django.core.paginator import Paginator
 from .models import SearchN
 
-import requests
-import os
-
-def hello_w(request):
-    return HttpResponse("Hello World")
-
-class India(View):
-    def get(self, request):
-        return HttpResponse("Hello India")
-
-def Home(request):
-    form = ReservationForm()
-
-    if request.method == 'POST':
-        form = ReservationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponse("Form submitted successfully")
-    return render(request, 'index.html', {'form': form})
-
-# def search(request):
-#     # form = SearchForm()
-#     if request.method == 'POST':
-#         form = SearchForm(request.POST)
-#         if form.is_valid():
-#             query = form.cleaned_data['query']
-#             # Process the search data
-#             form.save()
-#             return HttpResponse(f"Search submitted successfully {query}")
-#     return render(request, 'seachN.html', {'form': form})
-#     # return HttpResponse("Search N")
+from django.http import JsonResponse
+from django.template.loader import render_to_string   
 
 def search(request):
     images = []
     if request.method == 'POST':
         query = request.POST.get('query', '')
         print(f"Search query: {query}")
-        # return HttpResponse(f"Search submitted successfully {query}")
         SearchN.objects.all().delete()  # Clear previous search results
-        try:
-            crawler = Crawler(query)
-            smallest_tag = crawler.returnSmallestCountTag()
-            print(f"Smallest tag: {smallest_tag}")
-            crawler.search_main_tag(smallest_tag)
-        except Exception as e:
-            print(f"❌ Error during crawling: {e}")
-        # for name, link, src in result.values():
-        #     images.append({"url": src, 
-        #                    "name": name,
-        #                    "link": link,
-        #                    'is_remote': src.startswith('http')})
-            
+        # run_crawler_task(query)  # Start the ?background task
+
+        run_crawler_task_celery.delay(query)  # Start the Celery task
+        # Dummy placeholders while background runs
         SearchN.objects.create(
             name="Home",
             link="images/Home.png",
@@ -71,7 +29,6 @@ def search(request):
             url="images/Moon.png",
             is_remote=False
         )
-        
         images = SearchN.objects.order_by('-date_added')
     else:
         # Load from session if this is a GET request (for pagination)
@@ -79,13 +36,17 @@ def search(request):
         # images = request.session.get('search_results', [])
     
     # Paginator is used to paginate the results
+    page = Paginator(images, 9)
     page_number = request.GET.get('page')
-    page = Paginator(images, 10)
     page_obj = page.get_page(page_number)
-        # print(f"Result: {result}")
-    print(f"{page_obj} images found")
-    try:
-        return render(request, 'searchN.html', { 'page_obj': page_obj , 'images': images})
-    except Exception as e:
-        return HttpResponseServerError(f"Something broke: {e}")
-    # return HttpResponse("Search N")
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string('image_list.html', {'page_obj': page_obj, 'images': images})
+        return JsonResponse({'html': html})
+    else:
+        try:
+            return render(request, 'searchN.html', { 'page_obj': page_obj , 'images': images})
+        except Exception as e:
+            return HttpResponseServerError(f"Something broke: {e}")
+        
+def get_count(request):
+    return JsonResponse({'count': SearchN.objects.count()})

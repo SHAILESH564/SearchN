@@ -6,43 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SearchN</title>
     <link rel="stylesheet" href="{% static 'searchN.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentPage = 1;
+        let count = 0;
+
+        function loadImages(page = currentPage) {
+            currentPage = page;
+            $.get(`/app/search/?page=${page}`, function (data) {
+                $('#images-section').html(data.html);
+            });
+        }
+        function checkForNewData() {
+            console.log(window.location.href);
+            $.get("{% url 'get_count' %}", (data) => {
+                if (data.count != count) {
+                    count = data.count;
+                    loadImages(); // Reload images if new data is available
+                }
+            })
+        }
+        $(document).ready(function () {
+            loadImages(); // Initial load
+            // Check for new data every 5 seconds
+            setInterval(checkForNewData, 60000);
+        });
+        // Intercept pagination link clicks
+            $(document).on('click', '.pagination-link', function (e) {
+                e.preventDefault();
+                const page = $(this).attr('href').split('page=')[1];
+                loadImages(page);
+            });
+    </script>
 </head>
 <body>
     <div class="form-body">
         {% include 'searchQuery.html' %}
         
-        <div class="imageForm">
-            {% if page_obj %}
-                <h2>Results:</h2>
-                <div class="images-div" >
-                    {% for img in images %}
-                        <div class="images-populate">
-                            <!-- <img src="{{ img.url }}" alt="Result Image" style="height: 200px;"> -->
-                            <a href="{{ img.link }}">
-                                {% if img.is_remote %}
-                                    <img src="{{ img.url }}" alt="Result Image" style="height: 200px;">
-                                {% else %}
-                                    <img src="{% static img.url %}" alt="Result Image" style="height: 200px;">
-                                {% endif %}
-                                <span class="caption">{{ img.name }}</span>
-                            </a>
-                            <!-- <img src="{% static img %}" alt="Result Image" style="height: 200px;"> -->
-                        </div>
-                    {% endfor %}
-                </div>
-                <!-- Pagination Link -->
-                 <div class="pagination">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                    {% endif %}
-                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                    {% endif %}
-                 </div>
-            {% endif %}
+        <div class="imageForm" id="images-section">
+            {% include 'image_list.html' %}
         </div>
-
     </div>
 </body>
 </html>

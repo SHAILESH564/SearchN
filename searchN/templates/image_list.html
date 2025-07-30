@@ -1,0 +1,30 @@
+{% load static %}
+{% if page_obj %}
+    <h2>Results:</h2>
+    <div class="images-div">
+        {% for img in page_obj.object_list %}
+            <div class="images-populate">
+                <!-- <img src="{{ img.url }}" alt="Result Image" style="height: 200px;"> -->
+                <a href="{{ img.link }}">
+                    {% if img.is_remote %}
+                        <img src="{{ img.url }}" alt="Result Image" style="height: 200px;">
+                    {% else %}
+                        <img src="{% static img.url %}" alt="Result Image" style="height: 200px;">
+                    {% endif %}
+                    <span class="caption">{{ img.name }}</span>
+                </a>
+                <!-- <img src="{% static img %}" alt="Result Image" style="height: 200px;"> -->
+            </div>
+        {% endfor %}
+    </div>
+    <!-- Pagination Link -->
+        <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">Next</a>
+        {% endif %}
+        </div>
+{% endif %}

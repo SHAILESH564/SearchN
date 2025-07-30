@@ -1,11 +1,6 @@
 
 from django import forms
-from .models import Reservation, SearchN
-
-class ReservationForm(forms.ModelForm):
-    class Meta:
-        model = Reservation
-        fields = '__all__'
+from .models import SearchN
 
 class SearchForm(forms.ModelForm):
     class Meta:

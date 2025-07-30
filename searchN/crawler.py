@@ -1,4 +1,4 @@
-from time import time
+import platform
 import re
 import os
 from urllib.parse import urlencode
@@ -12,27 +12,31 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 
 class Crawler:
     def __init__(self, tags):
+        self.count = 0
         load_dotenv()
         self.api_key = os.getenv('API_KEY')
-        # set up ScrapOps proxy URL
-        # scrapeops_proxy = f"https://proxy.scrapeops.io/v1/?api_key={self.api_key}"
-        # scrapeops_proxy = f"http://scrapeops.headless_browser_mode=true:{self.api_key}@proxy.scrapeops.io:5353"
+        print(f"Using API Key: {self.api_key}")
 
         self.tags = [tag.strip().lower().replace(' ','-') for tag in tags.split(',')]
         ua = UserAgent()
 
         options = Options()
-        options.binary_location = os.getenv("CHROME_BIN", "/opt/render/project/src/chrome/opt/google/chrome/google-chrome")
-        options.add_argument("--headless=new")
-        # options.add_argument(f"--proxy-server={scrapeops_proxy}")
+        if platform.system() == "Linux":
+            options.binary_location = os.getenv("CHROME_BIN", "/opt/render/project/src/chrome/opt/google/chrome/google-chrome")
+            # chrome_driver_path = os.getenv("CHROME_BIN", "/opt/render/project/src/chrome/opt/google/chrome/google-chrome")
+        else:
+            chrome_driver_path = os.getenv("CHROMEDRIVER_PATH", "D:\Coding\chromedriver-win64\chromedriver.exe")  # adjust if running locally
+        # options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
         options.add_argument(f"user-agent={ua.random}")
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115 Safari/537.36")
         options.add_argument("--disable-gpu")
-        self.driver = webdriver.Chrome(options=options)
+        service = Service(executable_path=chrome_driver_path)
+        self.driver = webdriver.Chrome(service=service, options=options)
 
     def get_scrapeops_url(self, target_url):
         if "proxy.scrapeops.io" in target_url:
@@ -105,14 +109,12 @@ class Crawler:
     def search_main_tag(self, tag):
         page = 1
         result = {}
-        # self.driver.get(f"https://nhentai.net/tag/{tag}/?page={page}")
         target_url = f"https://nhentai.net/tag/{tag}/?page={page}"
         proxy_url = self.get_scrapeops_url(target_url)
         self.driver.get(proxy_url)
         last_page_number = self.get_last_pageNumber()
         while page <= last_page_number:
             try:
-                # self.driver.get(f"https://nhentai.net/tag/{tag}/?page={page}")
                 target_url = f"https://nhentai.net/tag/{tag}/?page={page}"
                 proxy_url = self.get_scrapeops_url(target_url)
                 self.driver.get(proxy_url)
@@ -149,18 +151,21 @@ class Crawler:
                         if "Tags:" in tag_element.text:
                             tags_found = tag_element.find_elements(By.CSS_SELECTOR, "span.tags a.tag .name")
                             for tag_el in tags_found:
-                                # tag_text = tag_el.text.strip().replace(" ",'-')
                                 found_tags.add(tag_el.text.strip().replace(" ", "-"))
                         # if empty means all the tags are present as intended
                     if not set(self.tags) - found_tags:
                         result[manga_id] = [name, link, src]
+                        if src.startswith('//'):
+                            src = 'https:' + src
+                            print(f"FoundSRC: {src}")
                         SearchN.objects.create(
                             name=name,
                             link=link,
                             url=src,
-                            is_remote=src.startswith('http')
+                            is_remote=src.startswith('https'),
                         )
                         print(f"Found: {name} - {link} - {src}")
+                        self.count += 1
                     self.driver.close()
                     self.driver.switch_to.window(self.driver.window_handles[0])
 
@@ -168,6 +173,13 @@ class Crawler:
                     print(f"⚠️ Error fetching gallery details on page {page}: {e}")
                     page += 1
                     continue
+                finally:
+                    if len(self.driver.window_handles) > 1:
+                        self.driver.close()
+                        self.driver.switch_to.window(self.driver.window_handles[0])
+
+            print(f"[INFO] Open tabs after page {page}: {len(self.driver.window_handles)}")
             page += 1
-        # return result
-        
+        if self.driver.window_handles:
+            self.driver.quit()
+  
